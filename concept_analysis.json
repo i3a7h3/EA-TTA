@@ -1,0 +1,74 @@
+{
+  "CLIP-B32": {
+    "threshold": 0.0003266334533691406,
+    "stable_concepts": [
+      "pneumonia",
+      "infiltration",
+      "atelectasis",
+      "pulmonary edema",
+      "heart silhouette",
+      "diaphragm",
+      "mediastinum",
+      "trachea"
+    ],
+    "shifted_concepts": [
+      "consolidation",
+      "pleural effusion",
+      "lung field",
+      "costophrenic angle",
+      "endotracheal tube",
+      "central venous line",
+      "nasogastric tube",
+      "chest tube",
+      "pacemaker wires",
+      "monitoring electrodes",
+      "portable chest x-ray",
+      "anteroposterior view",
+      "posteroanterior view",
+      "supine positioning",
+      "upright positioning",
+      "bedside radiograph",
+      "patient identification marker",
+      "date and time stamp",
+      "radiation dose indicator",
+      "anatomical position marker",
+      "image quality indicator"
+    ]
+  },
+  "CLIP-L14": {
+    "threshold": 0.0008444786071777344,
+    "stable_concepts": [
+      "consolidation",
+      "pleural effusion",
+      "lung field",
+      "heart silhouette",
+      "diaphragm",
+      "mediastinum",
+      "costophrenic angle",
+      "trachea"
+    ],
+    "shifted_concepts": [
+      "pneumonia",
+      "infiltration",
+      "atelectasis",
+      "pulmonary edema",
+      "endotracheal tube",
+      "central venous line",
+      "nasogastric tube",
+      "chest tube",
+      "pacemaker wires",
+      "monitoring electrodes",
+      "portable chest x-ray",
+      "anteroposterior view",
+      "posteroanterior view",
+      "supine positioning",
+      "upright positioning",
+      "bedside radiograph",
+      "patient identification marker",
+      "date and time stamp",
+      "radiation dose indicator",
+      "anatomical position marker",
+      "image quality indicator"
+    ]
+  }
+}
