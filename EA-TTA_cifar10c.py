@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 EA-TTA: Explainability-Aware Test-Time Adaptation
-CIFAR-10-C - Natural Images with Corruptions
+CIFAR-10-C - General Images with Corruptions
 
 Evaluation pipeline:
 1. Train ResNet-18 on clean CIFAR-10
