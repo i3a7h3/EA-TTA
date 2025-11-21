@@ -28,8 +28,8 @@ pip install -r requirements.txt
 # Medical imaging (CheXpert→MIMIC)
 python EA-TTA_medical.py --data_root /path/to/MIMIC --gpu 0
 
-# Natural images (CIFAR-10-C)
-python EA-TTA_cifar10c.py --gpu 0
+# General images (CIFAR-10-C)
+python EA-TTA_general.py --gpu 0
 ```
 
 ---
@@ -38,8 +38,8 @@ python EA-TTA_cifar10c.py --gpu 0
 
 ```
 EA-TTA/
-├── EA-TTA_medical.py        # Medical image TTA (self-contained, ~730 lines)
-├── EA-TTA_cifar10c.py       # CIFAR-10-C TTA (self-contained, ~830 lines)
+├── EA-TTA_medical.py        # Medical image EA-TTA (self-contained)
+├── EA-TTA_general.py       # General EA-TTA (self-contained)
 ├── concept_analysis.json   # Pre-computed concept weights (optional)
 ├── requirements.txt        # Dependencies
 └── README.md              # This file
@@ -116,7 +116,7 @@ python EA-TTA_medical.py \
 
 **Run:**
 ```bash
-python EA-TTA_cifar10c.py --gpu 0
+python EA-TTA_general.py --gpu 0
 ```
 
 **Arguments:**
@@ -132,7 +132,7 @@ python EA-TTA_cifar10c.py --gpu 0
 
 ## 📊 Evaluation Metrics
 
-- **Task Performance**: AUC (medical), Accuracy (CIFAR-10-C)
+- **Task Performance**: AUC (medical), Accuracy (general)
 - **Concept Stability**: 
   - SCR (Stable Concept Reliance) ↑
   - SPR (Spurious Concept Reliance) ↓
