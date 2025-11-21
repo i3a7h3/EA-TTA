@@ -26,10 +26,10 @@ conda activate EA-TTA
 pip install -r requirements.txt
 
 # Medical imaging (CheXpert→MIMIC)
-python train_medical.py --data_root /path/to/MIMIC --gpu 0
+python EA-TTA_medical.py --data_root /path/to/MIMIC --gpu 0
 
 # Natural images (CIFAR-10-C)
-python train_cifar10c.py --gpu 0
+python EA-TTA_cifar10c.py --gpu 0
 ```
 
 ---
@@ -38,8 +38,8 @@ python train_cifar10c.py --gpu 0
 
 ```
 EA-TTA/
-├── train_medical.py        # Medical image TTA (self-contained, ~730 lines)
-├── train_cifar10c.py       # CIFAR-10-C TTA (self-contained, ~830 lines)
+├── EA-TTA_medical.py        # Medical image TTA (self-contained, ~730 lines)
+├── EA-TTA_cifar10c.py       # CIFAR-10-C TTA (self-contained, ~830 lines)
 ├── concept_analysis.json   # Pre-computed concept weights (optional)
 ├── requirements.txt        # Dependencies
 └── README.md              # This file
@@ -66,7 +66,7 @@ EA-TTA operates in three stages:
 ### Online Mode (Default)
 Computes concept shifts during adaptation:
 ```bash
-python train_medical.py --data_root /path/to/MIMIC --gpu 0
+python EA-TTA_medical.py --data_root /path/to/MIMIC --gpu 0
 ```
 - No preprocessing required
 - Works with any target domain
@@ -74,7 +74,7 @@ python train_medical.py --data_root /path/to/MIMIC --gpu 0
 ### Offline Mode (Better Performance)
 Uses pre-computed concept weights:
 ```bash
-python train_medical.py --concept_json concept_analysis.json --data_root /path/to/MIMIC --gpu 0
+python EA-TTA_medical.py --concept_json concept_analysis.json --data_root /path/to/MIMIC --gpu 0
 ```
 - Faster inference
 - Improved performance with calibration data
@@ -96,7 +96,7 @@ python train_medical.py --concept_json concept_analysis.json --data_root /path/t
 
 **Run:**
 ```bash
-python train_medical.py \
+python EA-TTA_medical.py \
     --data_root /data/MIMIC/2.0.0 \
     --task Pneumonia \
     --clip_model ViT-B/32 \
