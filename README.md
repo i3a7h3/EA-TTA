@@ -110,6 +110,26 @@ python EA-TTA_medical.py \
 
 ---
 
+## 🎯 General Images Setup
+
+**Dataset:** CIFAR-10-C (auto-downloaded)
+
+**Run:**
+```bash
+python EA-TTA_cifar10c.py --gpu 0
+```
+
+**Arguments:**
+- `--epochs`: Training epochs for base ResNet-18 (default: 10)
+- `--skip_train`: Skip training and load checkpoint
+- `--checkpoint`: Path to pre-trained model (default: cifar10_resnet18.pth)
+- `--clip_model`: ViT-B/32 or ViT-L/14
+- `--concept_json`: Path to pre-computed concept weights (optional)
+
+---
+
+
+
 ## 📊 Evaluation Metrics
 
 - **Task Performance**: AUC (medical), Accuracy (CIFAR-10-C)
