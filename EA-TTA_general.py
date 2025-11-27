@@ -72,9 +72,9 @@ TENT_HP_LIST = [
 
 # EA-TTA hyperparameter search space
 EATTA_HP_LIST = [
-    {"name": "eatta_a", "lr": 5e-5, "lambda_ent": 0.5, "lambda_causal": 1.0, "lambda_anchor": 1.0, "ema_alpha": 0.99, "gamma": 1.0},
-    {"name": "eatta_b", "lr": 1e-4, "lambda_ent": 0.3, "lambda_causal": 1.5, "lambda_anchor": 1.0, "ema_alpha": 0.95, "gamma": 2.0},
-    {"name": "eatta_c", "lr": 5e-5, "lambda_ent": 0.2, "lambda_causal": 2.0, "lambda_anchor": 1.5, "ema_alpha": 0.99, "gamma": 3.0},
+    {"name": "eatta_a", "lr": 5e-5, "lambda_ent": 0.5, "lambda_suppress": 1.0, "lambda_anchor": 1.0, "anchor_conf_thresh": 0.9, "ema_alpha": 0.99, "gamma": 1.0},
+    {"name": "eatta_b", "lr": 1e-4, "lambda_ent": 0.3, "lambda_suppress": 1.5, "lambda_anchor": 1.0, "anchor_conf_thresh": 0.9, "ema_alpha": 0.95, "gamma": 2.0},
+    {"name": "eatta_c", "lr": 5e-5, "lambda_ent": 0.2, "lambda_suppress": 2.0, "lambda_anchor": 1.5, "anchor_conf_thresh": 0.9, "ema_alpha": 0.99, "gamma": 3.0},
 ]
 
 torch.backends.cudnn.benchmark = True
@@ -428,9 +428,9 @@ class TentTTA(nn.Module):
         self.f.train()
         self.opt.zero_grad()
 
-        logits = self.f(x)
-        L_ent = self.entropy_loss(logits)
-        L_anchor = self.anchor_loss(x, logits)
+        logits     = self.f(x)
+        L_ent      = self.entropy_loss(logits)      
+        L_anchor   = self.anchor_loss(x, logits)  
 
         loss = self.lambda_ent * L_ent + self.lambda_anchor * L_anchor
 
@@ -440,6 +440,7 @@ class TentTTA(nn.Module):
             self.opt.step()
 
         return logits.detach()
+
 
 # -------------------- EA-TTA --------------------
 class EATTA(nn.Module):
@@ -461,7 +462,7 @@ class EATTA(nn.Module):
         lr=5e-5,
         lambda_ent=0.5,
         lambda_anchor=1.0,
-        lambda_causal=1.0,
+        lambda_suppress=1.0,
         anchor_conf_thresh=0.9,
         ema_alpha=0.99,
         gamma=2.0,
@@ -503,7 +504,7 @@ class EATTA(nn.Module):
 
         self.lambda_ent = lambda_ent
         self.lambda_anchor = lambda_anchor
-        self.lambda_causal = lambda_causal
+        self.lambda_suppress = lambda_suppress
         self.anchor_conf_thresh = anchor_conf_thresh
 
     def entropy_loss(self, logits):
@@ -553,10 +554,13 @@ class EATTA(nn.Module):
         w = w / (w.mean() + 1e-8)
         return w
 
-    def causal_loss(self, x, logits):
+    def suppress_loss(self, x, logits):
         """
-        Concept alignment loss with stability-aware weighting.
-        Aligns model predictions with CLIP predictions, weighted by concept stability.
+        Spurious-suppressing concept alignment loss (L_suppress in the paper).
+
+        Aligns model predictions with CLIP predictions, weighted by concept stability
+        w_k. Stable (low-shift) concepts get larger weights, while high-shift
+        (spurious) concepts get suppressed.
         """
         p_clip = get_clip_class_probs(self.clip_model, self.text_features, x)
         p_clip = p_clip.clamp(1e-7, 1-1e-7)
@@ -574,7 +578,7 @@ class EATTA(nn.Module):
         diff2 = (p_model - p_clip) ** 2
         loss = (diff2 * w).sum(dim=-1).mean()
         return loss
-
+  
     def forward(self, x):
         if self.opt is None:
             with torch.no_grad():
@@ -583,15 +587,15 @@ class EATTA(nn.Module):
         self.f.train()
         self.opt.zero_grad()
 
-        logits = self.f(x)
-        L_ent    = self.entropy_loss(logits)
-        L_anchor = self.anchor_loss(x, logits)
-        L_causal = self.causal_loss(x, logits)
+        logits     = self.f(x)
+        L_ent      = self.entropy_loss(logits)     
+        L_anchor   = self.anchor_loss(x, logits)      
+        L_suppress = self.suppress_loss(x, logits)    
 
         loss = (
-            self.lambda_ent * L_ent +
-            self.lambda_anchor * L_anchor +
-            self.lambda_causal * L_causal
+            self.lambda_ent      * L_ent +      
+            self.lambda_anchor   * L_anchor + 
+            self.lambda_suppress * L_suppress 
         )
 
         if not (torch.isnan(loss) or torch.isinf(loss)):
@@ -735,7 +739,7 @@ def main():
                 lr=hp["lr"],
                 lambda_ent=hp["lambda_ent"],
                 lambda_anchor=hp["lambda_anchor"],
-                lambda_causal=hp["lambda_causal"],
+                lambda_suppress=hp["lambda_suppress"],
                 anchor_conf_thresh=hp["anchor_conf_thresh"],
                 ema_alpha=hp["ema_alpha"],
                 gamma=hp["gamma"],
