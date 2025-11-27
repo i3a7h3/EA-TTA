@@ -277,7 +277,7 @@ class EATTA(nn.Module):
     Combines entropy minimization with concept-guided stability objectives.
     """
     def __init__(self, base_model, clip_model, concept_emb, stable_weight_cpu,
-                 lr=5e-4, lambda_ent=0.5, lambda_causal=1.0, lambda_anchor=2.0,
+                 lr=5e-4, lambda_ent=0.5, lambda_suppress=1.0, lambda_anchor=2.0,
                  lambda_balance=0.5, anchor_conf_thresh=0.9):
         super().__init__()
         self.f  = copy.deepcopy(base_model).to(device)
@@ -314,7 +314,7 @@ class EATTA(nn.Module):
         self.opt = torch.optim.Adam(params, lr=lr) if params else None
 
         self.lambda_ent = lambda_ent
-        self.lambda_causal = lambda_causal
+        self.lambda_suppress = lambda_suppress
         self.lambda_anchor = lambda_anchor
         self.lambda_balance = lambda_balance
         self.anchor_conf_thresh = anchor_conf_thresh
@@ -323,10 +323,14 @@ class EATTA(nn.Module):
         p = torch.sigmoid(logits).clamp(1e-7, 1-1e-7)
         return (-p*torch.log(p) - (1-p)*torch.log(1-p)).mean()
 
-    def causal_loss(self, c_hat, c_clip):
-        """Align predicted concepts with CLIP concepts, weighted by stability."""
+    def suppress_loss(self, c_hat, c_clip):
+        """
+        Spurious-suppressing concept alignment loss (L_suppress in the paper).
+        Align predicted concepts with CLIP concepts, weighted by stability.
+        """
         w = self.stable_weight / (self.stable_weight.sum() + 1e-8)
         return ((c_hat - c_clip)**2 * w.unsqueeze(0)).sum(dim=1).mean()
+
 
     def anchor_loss(self, x, logits_tta):
         """Anchor to source model predictions for high-confidence samples."""
@@ -354,7 +358,7 @@ class EATTA(nn.Module):
         c_hat  = self.head(feats)
         loss = (
             self.lambda_ent * self.entropy_loss(logits) +
-            self.lambda_causal * self.causal_loss(c_hat, c_clip) +
+            self.lambda_suppress * self.suppress_loss(c_hat, c_clip) +
             self.lambda_anchor * self.anchor_loss(x, logits) +
             self.lambda_balance * self.balance_loss(logits)
         )
@@ -557,7 +561,7 @@ def main():
         # EA-TTA
         eatta = EATTA(
             base_model, clip_model, concept_emb, stable_w,
-            lr=5e-4, lambda_ent=0.5, lambda_causal=1.0,
+            lr=5e-4, lambda_ent=0.5, lambda_suppress=1.0,
             lambda_anchor=2.0, lambda_balance=0.5
         )
         res_ea = evaluate_model(
